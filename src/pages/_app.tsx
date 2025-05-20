@@ -5,15 +5,30 @@ import { api } from "~/utils/api";
 
 import "~/styles/globals.css";
 
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton
+} from '@clerk/nextjs'
+
+
 const geist = Geist({
   subsets: ["latin"],
 });
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <div className={geist.className}>
+    <ClerkProvider>
+      <SignedOut>
+        <SignInButton />
+      </SignedOut>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
       <Component {...pageProps} />
-    </div>
+    </ClerkProvider>
   );
 };
 
