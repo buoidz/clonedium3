@@ -22,7 +22,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
       <SignedOut>
-        <SignInButton />
+        {/* <SignInButton /> */}
       </SignedOut>
       <SignedIn>
         <UserButton />
