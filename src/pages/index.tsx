@@ -1,8 +1,49 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 
-import { api } from "~/utils/api";
+import { api, type RouterOutputs } from "~/utils/api";
+
+const CreatePostWizard = () => {
+  const { user, isSignedIn } = useUser();
+
+  console.log(user);
+
+  if (!isSignedIn || !user) return null;
+
+  return (
+    <div className="flex w-full gap-3">
+      <Image 
+        src={user.imageUrl} 
+        alt="Profile Image"
+        className="h-14 w-14 rounded-full"
+        width={56} 
+        height={56}
+        />
+      <input placeholder="Type some emojis!" className="grow bg-transparent outline-0"/>
+    </div>
+    );
+
+  
+}
+
+
+type PostWithUser =  RouterOutputs["post"]["getLatest"][number];
+const PostView = (props: PostWithUser) => {
+  const { post, author } = props
+  return (
+    <div key={post.id} className="flex border-b gap-3 border-slate-400 p-4">
+      <Image src={author.imageUrl} className="h-14 w-14 rounded-full" alt="`@${author.username} `" width={56} height={56}/>
+      <div className="flex flex-col">
+        <div className="flex text-slate-300">
+          <span>{`@${author.username}`}</span> 
+        </div>
+        <span>{post.content}</span>
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
   const user = useUser();
@@ -28,17 +69,11 @@ export default function Home() {
                 <SignInButton />
               </div>
             )}
-            {!!user.isSignedIn && (
-              <div className="flex justify-center">
-                <SignOutButton />
-              </div>
-            )}
+            {user.isSignedIn && <CreatePostWizard />}
           </div>
           <div className="flex flex-col">
-            {[...data]?.map((post) => 
-              <div key={post.id} className="border-b border-slate-400 p-8">
-                {post.content}
-              </div>
+            {[...data]?.map((fullPost) => 
+              <PostView {...fullPost} key={fullPost.post.id} />
             )}
           </div>
         </div>
