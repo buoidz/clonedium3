@@ -25,7 +25,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         {/* <SignInButton /> */}
       </SignedOut>
       <SignedIn>
-        <UserButton />
+        {/* <UserButton /> */}
       </SignedIn>
       <Component {...pageProps} />
     </ClerkProvider>

@@ -2,6 +2,7 @@ import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { LoadingPage } from "~/components/loading";
 
 import { api, type RouterOutputs } from "~/utils/api";
 
@@ -50,7 +51,7 @@ export default function Home() {
 
   const { data, isLoading} = api.post.getLatest.useQuery();
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading || true) return <LoadingPage/>;
 
   if (!data) return <div>Something went wrong</div>;
 
