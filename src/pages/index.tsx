@@ -1,4 +1,5 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import type { Post } from "@prisma/client";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,14 +47,30 @@ const PostView = (props: PostWithUser) => {
   )
 }
 
+const Feed = () => {
+  const { data, isLoading: postsLoading} = api.post.getLatest.useQuery();
+
+  if (postsLoading) return <LoadingPage/>;
+
+  if (!data) return <div>Something went wrong!</div>
+
+  return (
+    <div className="flex flex-col">
+      {[...data]?.map((fullPost: PostWithUser) => 
+        <PostView {...fullPost} key={fullPost.post.id} />
+      )}
+    </div>
+  );
+
+}
+
 export default function Home() {
-  const user = useUser();
+  const { isLoaded: userLoaded, isSignedIn} = useUser();
 
-  const { data, isLoading} = api.post.getLatest.useQuery();
+  // Start fetching asap
+  api.post.getLatest.useQuery();
 
-  if (isLoading || true) return <LoadingPage/>;
-
-  if (!data) return <div>Something went wrong</div>;
+  if (!userLoaded) return <div/>;
 
   return (
     <>
@@ -65,18 +82,14 @@ export default function Home() {
       <main className="flex h-full h-screen justify-center">
         <div className="h_full w-full border-x md:max-w-2xl">
           <div className="border-b border-slate-400 p-4">
-            {!user.isSignedIn && (
+            {!isSignedIn && (
               <div className="flex justify-center">
                 <SignInButton />
               </div>
             )}
-            {user.isSignedIn && <CreatePostWizard />}
+            {isSignedIn && <CreatePostWizard />}
           </div>
-          <div className="flex flex-col">
-            {[...data]?.map((fullPost) => 
-              <PostView {...fullPost} key={fullPost.post.id} />
-            )}
-          </div>
+          <Feed/>
         </div>
       </main>
     </>

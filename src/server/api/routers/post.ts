@@ -14,24 +14,6 @@ const filterUserForClient = (user: User) => {
 }
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.post.create({
-        data: {
-          name: input.name,
-        },
-      });
-    }),
-
   getLatest: publicProcedure.query(async ({ ctx }) => {
     // const post = await ctx.db.post.findFirst({
     const posts = await ctx.db.post.findMany({
@@ -41,12 +23,12 @@ export const postRouter = createTRPCRouter({
 
     const users = (
       await (await clerkClient()).users.getUserList({
-        userId: posts.map((post: {authorId: String}) => post.authorId),
+        userId: posts.map((post) => post.authorId),
         limit: 100,
       })
     ).data.map(filterUserForClient);
 
-    return posts.map((post: {authorId: String}) => {
+    return posts.map((post) => {
       const author = users.find((user) => user.id === post.authorId);
 
       if (!author || !author.username) 
