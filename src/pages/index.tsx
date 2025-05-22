@@ -4,7 +4,8 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { LoadingPage } from "~/components/loading";
+import toast from "react-hot-toast";
+import { LoadingPage, LoadingSpinner } from "~/components/loading";
 
 import { api, type RouterOutputs } from "~/utils/api";
 
@@ -19,10 +20,18 @@ const CreatePostWizard = () => {
     onSuccess: () => {
       setInput(""); 
       utils.post.getLatest.invalidate(); 
+    },
+    onError: (e) => {
+      setInput("");
+      const errorMessage = e.data?.zodError?.fieldErrors.content;
+      if (errorMessage && errorMessage[0]) {
+        toast.error(errorMessage[0]);
+      } else {
+        toast.error("Failed to post! Please try again later.")
+      }
     }
   });
 
-  console.log(user);
 
   if (!isSignedIn || !user) return null;
 
@@ -41,14 +50,28 @@ const CreatePostWizard = () => {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key == "Enter") {
+            e.preventDefault();
+            if (input !== "") {
+              postMutation.mutate({ content: input })
+            }
+          }
+        }}
         disabled={postMutation.isPending}
       />
-      <button 
-        onClick={() => postMutation.mutate({ content: input })}
-        disabled={postMutation.isPending}
-      >
-        Post
-      </button>
+      {input !== "" && (
+        <button 
+          onClick={() => postMutation.mutate({ content: input })}
+          disabled={postMutation.isPending}
+        >
+          Post
+        </button>
+      )}
+      {postMutation.isPending && (
+        <div className="flex items-center justify-center">
+          <LoadingSpinner size={20}/>
+        </div>)}
     </div>
     );
 
