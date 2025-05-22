@@ -3,12 +3,24 @@ import type { Post } from "@prisma/client";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { LoadingPage } from "~/components/loading";
 
 import { api, type RouterOutputs } from "~/utils/api";
 
 const CreatePostWizard = () => {
   const { user, isSignedIn } = useUser();
+
+  const [input, setInput] = useState("");
+
+  const utils = api.useUtils();
+
+  const postMutation = api.post.create.useMutation({
+    onSuccess: () => {
+      setInput(""); 
+      utils.post.getLatest.invalidate(); 
+    }
+  });
 
   console.log(user);
 
@@ -23,7 +35,20 @@ const CreatePostWizard = () => {
         width={56} 
         height={56}
         />
-      <input placeholder="Type some emojis!" className="grow bg-transparent outline-0"/>
+      <input 
+        placeholder="Type some emojis!" 
+        className="grow bg-transparent outline-0"
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        disabled={postMutation.isPending}
+      />
+      <button 
+        onClick={() => postMutation.mutate({ content: input })}
+        disabled={postMutation.isPending}
+      >
+        Post
+      </button>
     </div>
     );
 
@@ -41,7 +66,7 @@ const PostView = (props: PostWithUser) => {
         <div className="flex text-slate-300">
           <span>{`@${author.username}`}</span> 
         </div>
-        <span>{post.content}</span>
+        <span className="text-2xl">{post.content}</span>
       </div>
     </div>
   )
@@ -56,7 +81,7 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col">
-      {[...data]?.map((fullPost: PostWithUser) => 
+      {data.map((fullPost: PostWithUser) => 
         <PostView {...fullPost} key={fullPost.post.id} />
       )}
     </div>
