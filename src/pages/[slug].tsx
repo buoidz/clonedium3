@@ -9,8 +9,25 @@ import SuperJSON from "superjson";
 import { appRouter } from "~/server/api/root";
 import { PageLayout } from "~/components/layout";
 import Image from "next/image";
+import { PostView } from "~/components/postview";
 
+const ProfileFeed = (props: {userId: string}) => {
+  const { data, isLoading } = api.post.getPostByUserId.useQuery({
+    userId: props.userId,
+  });
 
+  if (isLoading) return <LoadingPage/>;
+
+  if (!data || data.length === 0) return <div>User has not posted</div>
+
+  return (
+    <div className="flex flex-col">
+      {data.map((fullPost) => (
+        <PostView {...fullPost} key={fullPost.post.id} />
+      ))}
+    </div>
+  );
+};
 
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
@@ -31,16 +48,19 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
         <title>{data.username}</title>
       </Head>
       <PageLayout>
-        <div className="=border-b h-48 border-slate-400 bg-slate-600">
+        <div className="relative h-48 bg-slate-600">
           <Image 
             src={data.imageUrl} 
             alt={`${data.username ?? ""}'s profile picture`}
-            width={64}
-            height={64}
-            className="-mb-8"
+            width={128}
+            height={128}
+            className="absolute bottom-0 left-0 -mb-[64px] ml-4 rounded-full border-4 border-black bg-black"
           />
-          <div>{data.username}</div>
-        </div>
+          <div className="h-[192px]"></div>
+          <div className="p-4 pt-[80px] text-2xl font-bold">{`@${data.username ?? ""}`}</div>
+          <div className="border-b border-slate-400 w-full"></div>
+          <ProfileFeed userId={data.id}/>
+        </div>  
       </PageLayout>
     </>
   );

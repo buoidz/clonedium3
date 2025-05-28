@@ -1,12 +1,10 @@
 import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
-import type { Post } from "@prisma/client";
-import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { PageLayout } from "~/components/layout";
 import { LoadingPage, LoadingSpinner } from "~/components/loading";
+import { PostView } from "~/components/postview";
 
 import { api, type RouterOutputs } from "~/utils/api";
 
@@ -80,22 +78,6 @@ const CreatePostWizard = () => {
 }
 
 
-type PostWithUser =  RouterOutputs["post"]["getLatest"][number];
-const PostView = (props: PostWithUser) => {
-  const { post, author } = props
-  return (
-    <div key={post.id} className="flex border-b gap-3 border-slate-400 p-4">
-      <Image src={author.imageUrl} className="h-14 w-14 rounded-full" alt="`@${author.username} `" width={56} height={56}/>
-      <div className="flex flex-col">
-        <div className="flex text-slate-300">
-          <Link href={`/@${author.username}`}><span>{`@${author.username}`}</span></Link>
-        </div>
-        <Link href={'/post/${post.id}'}><span className="text-2xl">{post.content}</span></Link>
-      </div>
-    </div>
-  )
-}
-
 const Feed = () => {
   const { data, isLoading: postsLoading} = api.post.getLatest.useQuery();
 
@@ -105,7 +87,7 @@ if (!data) return <div>Something went wrong!</div>
 
   return (
     <div className="flex flex-col">
-      {data.map((fullPost: PostWithUser) => 
+      {data.map((fullPost) => 
         <PostView {...fullPost} key={fullPost.post.id} />
       )}
     </div>
