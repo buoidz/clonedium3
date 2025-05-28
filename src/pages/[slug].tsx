@@ -55,7 +55,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
             width={128}
             height={128}
             className="absolute bottom-0 left-0 -mb-[64px] ml-4 rounded-full border-4 border-black bg-black"
-          />
+          /> 
           <div className="h-[192px]"></div>
           <div className="p-4 pt-[80px] text-2xl font-bold">{`@${data.username ?? ""}`}</div>
           <div className="border-b border-slate-400 w-full"></div>
