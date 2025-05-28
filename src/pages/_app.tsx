@@ -13,6 +13,7 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+import Head from "next/head";
 
 
 const geist = Geist({
@@ -22,6 +23,11 @@ const geist = Geist({
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider>
+      <Head>
+        <title>Clonedium3</title>
+        <meta name="description" content="👀" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <Toaster position="bottom-center"/>
       <Component {...pageProps} />
     </ClerkProvider>
