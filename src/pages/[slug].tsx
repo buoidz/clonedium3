@@ -79,7 +79,7 @@ export const getStaticProps: GetStaticProps = async (context) => {
 
   const username = slug.replace("@", "");
 
-  helper.profile.getUserByUsername.prefetch({ username: slug});
+  await helper.profile.getUserByUsername.prefetch({ username: slug});
 
 
   return {

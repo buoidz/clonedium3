@@ -23,7 +23,7 @@ const CreatePostWizard = () => {
     onError: (e) => {
       setInput("");
       const errorMessage = e.data?.zodError?.fieldErrors.content;
-      if (errorMessage && errorMessage[0]) {
+      if (errorMessage?.[0]) {
         toast.error(errorMessage[0]);
       } else {
         toast.error("Failed to post! Please try again later.")
@@ -99,7 +99,7 @@ export default function Home() {
   const { isLoaded: userLoaded, isSignedIn} = useUser();
 
   // Start fetching asap
-  api.post.getLatest.useQuery();
+  void api.post.getLatest.useQuery();
 
   if (!userLoaded) return <div/>;
 
