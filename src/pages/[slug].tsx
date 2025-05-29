@@ -10,6 +10,7 @@ import { appRouter } from "~/server/api/root";
 import { PageLayout } from "~/components/layout";
 import Image from "next/image";
 import { PostView } from "~/components/postview";
+import { generateSSGHelper } from "~/server/helper/ssgHelper";
 
 const ProfileFeed = (props: {userId: string}) => {
   const { data, isLoading } = api.post.getPostByUserId.useQuery({
@@ -30,13 +31,12 @@ const ProfileFeed = (props: {userId: string}) => {
 };
 
 
+
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
 
   const { data, isLoading } = api.profile.getUserByUsername.useQuery({
     username,
   })
-
-  console.log(username);
 
   if (isLoading) return <LoadingPage/>;
 
@@ -67,11 +67,7 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
-  const helper = createServerSideHelpers({
-    router: appRouter,
-    ctx: { db, currentUser: null },
-    transformer: SuperJSON,
-  });
+  const helper = generateSSGHelper();
 
   const slug = context.params?.slug;
 

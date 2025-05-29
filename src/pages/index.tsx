@@ -81,9 +81,9 @@ const CreatePostWizard = () => {
 const Feed = () => {
   const { data, isLoading: postsLoading} = api.post.getLatest.useQuery();
 
-if (postsLoading) return <LoadingPage/>;
+  if (postsLoading) return <LoadingPage/>;
 
-if (!data) return <div>Something went wrong!</div>
+  if (!data) return <div>Something went wrong!</div>
 
   return (
     <div className="flex flex-col">

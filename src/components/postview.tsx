@@ -6,7 +6,8 @@ import { api, type RouterOutputs } from "~/utils/api";
 
 type PostWithUser =  RouterOutputs["post"]["getLatest"][number];
 export const PostView = (props: PostWithUser) => {
-  const { post, author } = props
+  const { post, author } = props;
+  console.log(post.id);
   return (
     <div key={post.id} className="flex border-b gap-3 border-slate-400 p-4">
       <Image 
@@ -21,7 +22,7 @@ export const PostView = (props: PostWithUser) => {
             <span>{`@${author.username}`}</span>
           </Link>
         </div>
-        <Link href={'/post/${post.id}'}>
+        <Link href={`/post/${post.id}`}>
           <span className="text-2xl">{post.content}</span>
         </Link>
       </div>
