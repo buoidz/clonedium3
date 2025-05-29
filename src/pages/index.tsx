@@ -18,7 +18,7 @@ const CreatePostWizard = () => {
   const postMutation = api.post.create.useMutation({
     onSuccess: () => {
       setInput(""); 
-      utils.post.getLatest.invalidate(); 
+      void utils.post.getLatest.invalidate(); 
     },
     onError: (e) => {
       setInput("");
