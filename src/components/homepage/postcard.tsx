@@ -14,8 +14,10 @@ export const PostCard = (props: PostWithUser) => {
   const { post, author } = props;
   
   // Preview is everything rightnow
-  const preview = post.content;
-  
+  const preview = post.content.length > 40 
+    ? post.content.substring(0, 40) + ' ...'
+    : post.content;
+
   return (
     <article className="group cursor-pointer border-b border-gray-100 py-8 transition-all duration-200">
       <div className="flex items-start justify-between gap-6">

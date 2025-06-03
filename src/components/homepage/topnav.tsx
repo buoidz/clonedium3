@@ -2,13 +2,27 @@ import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Search } from "lucide-react";
 
 export const TopNav = () => {
   const { user, isSignedIn } = useUser();
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
 
   return (
     <header className="sticky top-0 z-50 w-full px-6 py-2.5">
@@ -51,22 +65,31 @@ export const TopNav = () => {
             >
               Write
             </button>
-            <div className="relative group">
-              <Image
-                src={user.imageUrl}
-                alt="Profile"
-                width={36}
-                height={36}
-                className="h-8 w-8 rounded-full cursor-pointer"
-              />
-              {/* Dropdown on hover */}
-              <div className="absolute right-0 mt-2 hidden w-32 rounded bg-white p-2 shadow-md group-hover:block">
-                <SignOutButton>
-                  <button className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100">
-                    Sign Out
-                  </button>
-                </SignOutButton>
+            <div className="relative" ref={dropdownRef}>
+              <div className="cursor-pointer" onClick={() => setOpen((prev) => !prev)}>
+                <Image
+                  src={user.imageUrl}
+                  alt="Profile"
+                  width={36}
+                  height={36}
+                  className="h-8 w-8 rounded-full cursor-pointer"
+                />
               </div>
+              {open && (
+                <div className="absolute right-0 mt-2 w-32 rounded bg-white p-2 shadow-md">
+                  <button
+                    onClick={() => router.push(`/@${user.username}`)}
+                    className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100"
+                  >
+                    Profile
+                  </button>
+                  <SignOutButton>
+                    <button className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100">
+                      Sign Out
+                    </button>
+                  </SignOutButton>
+                </div>
+              )}
             </div>
           </>
         ) : (

@@ -11,11 +11,12 @@ import { Sidebar } from "~/components/homepage/sidebar";
 import { NavigationTabs } from "~/components/homepage/navigationTab";
 import { TopNav } from "~/components/homepage/topnav";
 
+
 const HeroSection = ({ isSignedIn }: { isSignedIn: boolean }) => {
   if (isSignedIn) return null;
 
   return (
-    <div className="border-b border-slate-400 bg-white text-black">
+    <div className="border-b border-slate-400 text-black bg-white">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-12 px-4 py-4 md:flex-row">
         <div className="max-w-2xl">
           <h1 className="mb-6 text-8xl leading-[1.0] font-normal tracking-tight">
@@ -43,11 +44,13 @@ const HeroSection = ({ isSignedIn }: { isSignedIn: boolean }) => {
   );
 };
 
+
 export default function Home() {
   const { isLoaded: userLoaded, isSignedIn } = useUser();
   const [activeTab, setActiveTab] = useState<string | null>(null); // Move state up
 
   const { data: tabs } = api.tag.getAll.useQuery();
+
 
   useEffect(() => {
     if (tabs?.[0] && tabs.length > 0 && activeTab === null) {
@@ -66,6 +69,7 @@ export default function Home() {
         <TopNav />
         <HeroSection isSignedIn={!!isSignedIn} />
 
+
         <UserDbSync />
 
         {!isSignedIn && (
@@ -74,6 +78,7 @@ export default function Home() {
           </div>
         )}
       </div>
+
 
       <div className="flex flex-col lg:flex-row">
         <main className="flex-1 lg:pr-4">

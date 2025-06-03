@@ -30,25 +30,7 @@ export const NavigationTabs = ({ activeTab, setActiveTab }: NavigationTabsProps)
     }
   };
 
-  // const tagMutation = api.tag.create.useMutation({
-  //   onSuccess: () => {
-  //     setInput({ name: "" });
-  //     void utils.post.getLatest.invalidate();
-  //   },
-  //   onError: (e) => {
-  //     console.error("Tag creation error:", e);
 
-  //     setInput({ name: "" });
-
-  //     const nameError = e.data?.zodError?.fieldErrors.name?.[0];
-
-  //     if (nameError) {
-  //       toast.error(nameError);
-  //     } else {
-  //       toast.error("Failed to add tag! Please try again later.")
-  //     }
-  //   }
-  // });
 
   if (tabsLoading) return <LoadingPage />;
 

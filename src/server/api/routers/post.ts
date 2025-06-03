@@ -40,7 +40,7 @@ const addUserDataToPosts = async (posts: PostWithCount[]) => {
 }
 
 // Create a new ratelimiter, that allows 3 requests per 1 minute
-const ratelimit = new Ratelimit({
+export const ratelimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(3, "1 m"),
   analytics: true,
@@ -109,12 +109,69 @@ export const postRouter = createTRPCRouter({
               comments: true,
             },
           },
+          likes: ctx.currentUser ? {
+            where: {
+              userId: ctx.currentUser.id,
+            },
+            select: {
+              id: true,
+            },
+          } : false,
         },
       });
 
       if (!post) throw new TRPCError ({ code: "NOT_FOUND" });
 
-      return (await addUserDataToPosts([post]))[0];
+      const postWithUserData = (await addUserDataToPosts([post]))[0];
+
+      if (!postWithUserData) {
+        throw new TRPCError ({ code: "INTERNAL_SERVER_ERROR", message: "Failed to process post data" });
+      }
+      
+      return {
+        ...postWithUserData,
+        isLikedByUser: ctx.currentUser ? post.likes.length > 0 : false,
+      };    
+    }),
+
+  toggleLike: publicProcedure
+  .input(z.object({ 
+    postId: z.string() 
+    }))
+    .mutation(async ({ ctx, input }) => {
+
+      if (!ctx.currentUser) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to like posts",
+        });
+      }
+
+      const existingLike = await ctx.db.like.findUnique({
+        where: {
+          postId_userId: {
+            postId: input.postId,
+            userId: ctx.currentUser.id,
+          },
+        },
+      });
+
+      if (existingLike) {
+        await ctx.db.like.delete({
+          where: {
+            id: existingLike.id,
+          },
+        });
+        return { liked: false };
+      } else {
+        await ctx.db.like.create({
+          data: {
+            postId: input.postId,
+            userId: ctx.currentUser.id,
+          },
+        });
+        return { liked: true };
+      }
     }),
 
   getPostByTag: publicProcedure

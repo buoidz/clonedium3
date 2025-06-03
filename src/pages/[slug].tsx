@@ -7,6 +7,13 @@ import { PageLayout } from "~/components/layout";
 import Image from "next/image";
 import { PostCard } from "~/components/homepage/postcard";
 import { generateSSGHelper } from "~/server/helper/ssgHelper";
+import { TopNav } from "~/components/homepage/topnav";
+import { NavigationTabs } from "~/components/homepage/navigationTab";
+import { Feed } from "~/components/homepage/feed";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import { SidebarProfile } from "~/components/profile/sidebarProfile";
+import { NavTabProfile } from "~/components/profile/navTabProfile";
 
 const ProfileFeed = (props: { userId: string }) => {
   const { data, isLoading } = api.post.getPostByUserId.useQuery({
@@ -27,6 +34,18 @@ const ProfileFeed = (props: { userId: string }) => {
 };
 
 const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
+  const { isLoaded: userLoaded, isSignedIn } = useUser();
+  const [activeTab, setActiveTab] = useState<string | null>(null); // Move state up
+
+  const { data: tabs } = api.tag.getAll.useQuery();
+
+
+  useEffect(() => {
+    if (tabs?.[0] && tabs.length > 0 && activeTab === null) {
+      setActiveTab(tabs[0].name);
+    }
+  }, [tabs, activeTab]);
+
   const { data, isLoading } = api.profile.getUserByUsername.useQuery({
     username,
   });
@@ -35,26 +54,37 @@ const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
 
   if (!data) return <div>Something went wrong!</div>;
 
+
   return (
     <>
       <Head>
         <title>{data.username}</title>
       </Head>
-      <PageLayout>
-        <div className="relative h-48 bg-slate-600">
-          <Image
-            src={data.imageUrl}
-            alt={`${data.username ?? ""}'s profile picture`}
-            width={128}
-            height={128}
-            className="absolute bottom-0 left-0 -mb-[64px] ml-4 rounded-full border-4 border-black bg-black"
-          />
-          <div className="h-[192px]"></div>
-          <div className="p-4 pt-[80px] text-2xl font-bold">{`@${data.username ?? ""}`}</div>
-          <div className="w-full border-b border-slate-400"></div>
-          <ProfileFeed userId={data.id} />
+      <div className="min-h-screen bg-white">
+        <div className="border-b border-gray-200">
+          <TopNav />
         </div>
-      </PageLayout>
+
+        <div className="flex flex-col lg:flex-row">
+
+          <main className="flex-1 lg:pr-4">
+            <p className="mx-auto max-w-2xl pt-50 pl-4 font-bold text-5xl text-black">{data.username}</p>
+            <NavTabProfile />
+            <div className="h-4 lg:h-6"></div>
+            <Feed activeTab={activeTab} />
+          </main>
+
+          <div className="w-full lg:w-auto">
+            <SidebarProfile 
+              user={{
+              id: data.id,
+              username: data.username ?? "anonymous",
+              imageUrl: data.imageUrl,
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </>
   );
 };
