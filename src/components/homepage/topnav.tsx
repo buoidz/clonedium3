@@ -23,6 +23,7 @@ export const TopNav = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  if (!user) return <div>No user info</div>;
 
   return (
     <header className="sticky top-0 z-50 w-full px-6 py-2.5">
@@ -57,48 +58,39 @@ export const TopNav = () => {
 
       {/* Actions */}
       <div className="flex items-center gap-4">
-        {isSignedIn ? (
-          <>
-            <button
-              onClick={() => router.push("/new-story")}
-              className="rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800"
-            >
-              Write
-            </button>
-            <div className="relative" ref={dropdownRef}>
-              <div className="cursor-pointer" onClick={() => setOpen((prev) => !prev)}>
-                <Image
-                  src={user.imageUrl}
-                  alt="Profile"
-                  width={36}
-                  height={36}
-                  className="h-8 w-8 rounded-full cursor-pointer"
-                />
-              </div>
-              {open && (
-                <div className="absolute right-0 mt-2 w-32 rounded bg-white p-2 shadow-md">
-                  <button
-                    onClick={() => router.push(`/@${user.username}`)}
-                    className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100"
-                  >
-                    Profile
-                  </button>
-                  <SignOutButton>
-                    <button className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100">
-                      Sign Out
-                    </button>
-                  </SignOutButton>
-                </div>
-              )}
+        <button
+          onClick={() => router.push("/new-story")}
+          className="rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-800"
+        >
+          Write
+        </button>
+        <div className="relative" ref={dropdownRef}>
+          <div className="cursor-pointer" onClick={() => setOpen((prev) => !prev)}>
+            <Image
+              src={user.imageUrl}
+              alt="Profile"
+              width={36}
+              height={36}
+              className="h-8 w-8 rounded-full cursor-pointer"
+            />
+          </div>
+          {open && (
+            <div className="absolute right-0 mt-2 w-32 rounded bg-white p-2 shadow-md">
+              <button
+                onClick={() => router.push(`/@${user.username}`)}
+                className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100"
+              >
+                Profile
+              </button>
+              <SignOutButton>
+                <button className="w-full rounded px-2 py-1 text-left text-sm text-black hover:bg-gray-100">
+                  Sign Out
+                </button>
+              </SignOutButton>
             </div>
-          </>
-        ) : (
-          <SignInButton>
-            <button className="rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
-              Sign In
-            </button>
-          </SignInButton>
-        )}
+          )}
+        </div>
+
         </div>
       </div>
     </header>
