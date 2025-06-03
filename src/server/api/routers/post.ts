@@ -9,7 +9,9 @@ import { Redis } from "@upstash/redis"; // see below for cloudflare and fastly a
 import { filterUserForClient } from "~/server/helper/filterUserForClient";
 import type { Post } from "@prisma/client";
 
-const addUserDataToPosts = async (posts: Post[]) => {
+type PostWithCount = Post & { _count: { likes: number; comments: number } };
+
+const addUserDataToPosts = async (posts: PostWithCount[]) => {
   const users = (
     await (await clerkClient()).users.getUserList({
       userId: posts.map((post) => post.authorId),
@@ -32,6 +34,7 @@ const addUserDataToPosts = async (posts: Post[]) => {
         ...author,
         username: author.username,
       },
+      _count: post._count,
     };
   });
 }
@@ -55,6 +58,14 @@ export const postRouter = createTRPCRouter({
     const posts = await ctx.db.post.findMany({
       orderBy: { createdAt: "desc" },
       take: 100,
+      include: {
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+      },
     });
 
     return addUserDataToPosts(posts);
@@ -71,6 +82,14 @@ export const postRouter = createTRPCRouter({
         },
         take: 100,
         orderBy: [{ createdAt: "desc" }],
+        include: {
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
+          },
+        },
       }).then(addUserDataToPosts),
     ),
 
@@ -82,7 +101,15 @@ export const postRouter = createTRPCRouter({
       const post = await ctx.db.post.findUnique({ 
         where: {
           id: input.id,
-        } 
+        },
+        include: {
+          _count: {
+            select: {
+              likes: true,
+              comments: true,
+            },
+          },
+        },
       });
 
       if (!post) throw new TRPCError ({ code: "NOT_FOUND" });
@@ -90,11 +117,48 @@ export const postRouter = createTRPCRouter({
       return (await addUserDataToPosts([post]))[0];
     }),
 
+  getPostByTag: publicProcedure
+    .input(z.object({ tagName: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // const post = await ctx.db.post.findFirst({
+      const postTags = await ctx.db.postTag.findMany({
+        where: {
+          tag: {
+            name: input.tagName,
+          },
+        },
+        include: {
+          post: {
+            include: {
+              _count: {
+                select: {
+                  likes: true,
+                  comments: true,
+                },
+              },
+            },
+          }
+        },
+        orderBy: { 
+          post: {
+            createdAt: "desc",
+          },
+         },
+        take: 100,
+      });
+
+    const posts = postTags.map((pt) => pt.post);
+
+    return addUserDataToPosts(posts);
+  }),
+
 
   create: privateProcedure
     .input(
       z.object({
+        title: z.string().min(1).max(100), 
         content: z.string().emoji("Only emoji are allowed!").min(1).max(280),
+        tagIds: z.array(z.string().min(1).max(100)),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -108,9 +172,17 @@ export const postRouter = createTRPCRouter({
 
     const post = await ctx.db.post.create({
       data: {
-        authorId,
+        title: input.title,
         content: input.content,
+        authorId,
       },
+    });
+
+    await ctx.db.postTag.createMany({
+      data: input.tagIds.map((tagId: string) => ({
+        postId: post.id,
+        tagId,
+      })),
     });
 
     return post;
